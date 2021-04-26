@@ -2,10 +2,10 @@ package services
 
 import (
 	"fmt"
+	"github.com/snail007/goproxy/utils"
 	"io"
 	"log"
 	"net"
-	"proxy/utils"
 	"runtime/debug"
 	"strconv"
 )
@@ -90,12 +90,12 @@ func (s *HTTP) callback(inConn net.Conn) {
 		} else {
 			s.checker.Add(address, false, req.Method, req.URL, req.HeadBuf)
 		}
-		//var n, m uint
+		// var n, m uint
 		useProxy, _, _ = s.checker.IsBlocked(req.Host)
-		//log.Printf("blocked ? : %v, %s , fail:%d ,success:%d", useProxy, address, n, m)
+		// log.Printf("blocked ? : %v, %s , fail:%d ,success:%d", useProxy, address, n, m)
 	}
 	log.Printf("use proxy : %v, %s", useProxy, address)
-	//os.Exit(0)
+	// os.Exit(0)
 	err = s.OutToTCP(useProxy, address, &inConn, &req)
 	if err != nil {
 		if *s.cfg.Parent == "" {
@@ -109,7 +109,7 @@ func (s *HTTP) callback(inConn net.Conn) {
 func (s *HTTP) OutToTCP(useProxy bool, address string, inConn *net.Conn, req *utils.HTTPRequest) (err error) {
 	inAddr := (*inConn).RemoteAddr().String()
 	inLocalAddr := (*inConn).LocalAddr().String()
-	//防止死循环
+	// 防止死循环
 	if s.IsDeadLoop(inLocalAddr, req.Host) {
 		utils.CloseConn(inConn)
 		err = fmt.Errorf("dead loop detected , %s", req.Host)
@@ -152,8 +152,8 @@ func (s *HTTP) OutToUDP(inConn *net.Conn) (err error) {
 }
 func (s *HTTP) InitOutConnPool() {
 	if *s.cfg.ParentType == TYPE_TLS || *s.cfg.ParentType == TYPE_TCP {
-		//dur int, isTLS bool, certBytes, keyBytes []byte,
-		//parent string, timeout int, InitialCap int, MaxCap int
+		// dur int, isTLS bool, certBytes, keyBytes []byte,
+		// parent string, timeout int, InitialCap int, MaxCap int
 		s.outPool = utils.NewOutPool(
 			*s.cfg.CheckParentInterval,
 			*s.cfg.ParentType == TYPE_TLS,

@@ -3,11 +3,11 @@ package services
 import (
 	"bufio"
 	"fmt"
+	"github.com/snail007/goproxy/utils"
 	"hash/crc32"
 	"io"
 	"log"
 	"net"
-	"proxy/utils"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -122,7 +122,7 @@ func (s *UDP) OutToTCP(packet []byte, localAddr, srcAddr *net.UDPAddr) (err erro
 			for {
 				srcAddrFromConn, body, err := utils.ReadUDPPacket(&conn)
 				if err == io.EOF || err == io.ErrUnexpectedEOF {
-					//log.Printf("connection %d released", connKey)
+					// log.Printf("connection %d released", connKey)
 					s.p.Remove(fmt.Sprintf("%d", connKey))
 					break
 				}
@@ -130,7 +130,7 @@ func (s *UDP) OutToTCP(packet []byte, localAddr, srcAddr *net.UDPAddr) (err erro
 					log.Printf("parse revecived udp packet fail, err: %s", err)
 					continue
 				}
-				//log.Printf("udp packet revecived over parent , local:%s", srcAddrFromConn)
+				// log.Printf("udp packet revecived over parent , local:%s", srcAddrFromConn)
 				_srcAddr := strings.Split(srcAddrFromConn, ":")
 				if len(_srcAddr) != 2 {
 					log.Printf("parse revecived udp packet fail, addr error : %s", srcAddrFromConn)
@@ -143,24 +143,24 @@ func (s *UDP) OutToTCP(packet []byte, localAddr, srcAddr *net.UDPAddr) (err erro
 					log.Printf("udp response to local %s fail,ERR:%s", srcAddr, err)
 					continue
 				}
-				//log.Printf("udp response to local %s success", srcAddr)
+				// log.Printf("udp response to local %s success", srcAddr)
 			}
 		}()
 	}
-	//log.Printf("select conn %d , local: %s", connKey, srcAddr.String())
+	// log.Printf("select conn %d , local: %s", connKey, srcAddr.String())
 	writer := bufio.NewWriter(conn)
-	//fmt.Println(conn, writer)
+	// fmt.Println(conn, writer)
 	writer.Write(utils.UDPPacket(srcAddr.String(), packet))
 	err = writer.Flush()
 	if err != nil {
 		log.Printf("write udp packet to %s fail ,flush err:%s", *s.cfg.Parent, err)
 		return
 	}
-	//log.Printf("write packet %v", packet)
+	// log.Printf("write packet %v", packet)
 	return
 }
 func (s *UDP) OutToUDP(packet []byte, localAddr, srcAddr *net.UDPAddr) (err error) {
-	//log.Printf("udp packet revecived:%s,%v", srcAddr, packet)
+	// log.Printf("udp packet revecived:%s,%v", srcAddr, packet)
 	dstAddr, err := net.ResolveUDPAddr("udp", *s.cfg.Parent)
 	if err != nil {
 		log.Printf("resolve udp addr %s fail  fail,ERR:%s", dstAddr.String(), err)
@@ -178,26 +178,26 @@ func (s *UDP) OutToUDP(packet []byte, localAddr, srcAddr *net.UDPAddr) (err erro
 		log.Printf("send udp packet to %s fail,ERR:%s", dstAddr.String(), err)
 		return
 	}
-	//log.Printf("send udp packet to %s success", dstAddr.String())
+	// log.Printf("send udp packet to %s success", dstAddr.String())
 	buf := make([]byte, 512)
 	len, _, err := conn.ReadFromUDP(buf)
 	if err != nil {
 		log.Printf("read udp response from %s fail ,ERR:%s", dstAddr.String(), err)
 		return
 	}
-	//log.Printf("revecived udp packet from %s , %v", dstAddr.String(), respBody)
+	// log.Printf("revecived udp packet from %s , %v", dstAddr.String(), respBody)
 	_, err = s.sc.UDPListener.WriteToUDP(buf[0:len], srcAddr)
 	if err != nil {
 		log.Printf("send udp response to cluster fail ,ERR:%s", err)
 		return
 	}
-	//log.Printf("send udp response to cluster success ,from:%s", dstAddr.String())
+	// log.Printf("send udp response to cluster success ,from:%s", dstAddr.String())
 	return
 }
 func (s *UDP) InitOutConnPool() {
 	if *s.cfg.ParentType == TYPE_TLS || *s.cfg.ParentType == TYPE_TCP {
-		//dur int, isTLS bool, certBytes, keyBytes []byte,
-		//parent string, timeout int, InitialCap int, MaxCap int
+		// dur int, isTLS bool, certBytes, keyBytes []byte,
+		// parent string, timeout int, InitialCap int, MaxCap int
 		s.outPool = utils.NewOutPool(
 			*s.cfg.CheckParentInterval,
 			*s.cfg.ParentType == TYPE_TLS,
